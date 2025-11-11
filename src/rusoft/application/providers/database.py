@@ -4,26 +4,19 @@ from typing import AsyncIterable
 from dishka import AnyOf, Provider, Scope, from_context, provide
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from rusoft.config.provider import DatabaseConfigProvider
-from rusoft.domain.contracts.database import (
-    ProductRepository,
-)
-from rusoft.infrastructure.databases.postgres import (
-    ProductsGateway,
-    new_session_maker,
-)
+from ...config.provider import DatabaseConfigProvider
+from ...domain.contracts.database import ProductRepository
+from ...infrastructure.databases.postgres import ProductsGateway, new_session_maker
 
 
 class ProductsGateProvider(Provider):
-    products_gate = provide(
-        ProductsGateway,
-        provides=AnyOf[ProductRepository],
-        scope=Scope.REQUEST,
-    )
+    @provide(provides=AnyOf[ProductRepository], scope=Scope.REQUEST)
+    def get_products_gateway(self, session: AsyncSession) -> ProductsGateway:
+        return ProductsGateway(session)
 
 
 class SessionProvider(Provider):
-    config = from_context(provides=DatabaseConfigProvider, scope=Scope.APP)
+    config_provider = from_context(provides=DatabaseConfigProvider, scope=Scope.APP)
 
     @provide(scope=Scope.APP)
     def get_session_maker(self, config_provider: DatabaseConfigProvider) -> async_sessionmaker[AsyncSession]:

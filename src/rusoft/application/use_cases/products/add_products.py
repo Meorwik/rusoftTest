@@ -1,8 +1,6 @@
-from dataclasses import asdict
-
-from src.rusoft.application.dto.products import ProductReadDTO
-from src.rusoft.domain.contracts.database.repositories import ProductRepository
-from src.rusoft.domain.entities.product import Product
+from rusoft.application.dto.products import ProductReadDTO, product_to_read_dto
+from rusoft.domain.contracts.database.repositories import ProductRepository
+from rusoft.domain.entities.product import Product
 
 
 class AddProductsUseCase:
@@ -12,7 +10,4 @@ class AddProductsUseCase:
 
     async def __call__(self, products: list[Product]) -> list[ProductReadDTO]:
         full_product_list: list[Product] = await self._repo.add_products(products)
-        return [
-            ProductReadDTO(**asdict(product))
-            for product in full_product_list
-        ]
+        return [product_to_read_dto(product) for product in full_product_list]

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,32 +15,38 @@ class ProductsGateway(ProductRepository):
         self._session = session
 
     async def add_products(self, products: list[Product]) -> list[Product]:
-        result_products = []
+        result_products: list[Product] = []
         for product in products:
-            stmt = insert(ProductModel).values(
-                uid_product=product.uid_product,
-                name=product.name,
-                description=product.description,
-                short_description=product.short_description,
-                uid_groups=product.uid_groups,
-                features=product.features,
-                uid_features=product.uid_features,
-                hash=product.hash,
-                is_weighted=product.is_weighted,
-                image_url=product.image_url,
-            ).on_conflict_do_update(
-                index_elements=["uid_product"],
-                set_={
-                    "name": product.name,
-                    "description": product.description,
-                    "short_description": product.short_description,
-                    "uid_groups": product.uid_groups,
-                    "features": product.features,
-                    "uid_features": product.uid_features,
-                    "hash": product.hash,
-                    "is_weighted": product.is_weighted,
-                    "image_url": product.image_url,
-                },
+            stmt = (
+                insert(ProductModel)
+                .values(
+                    uid_product=UUID(str(product.uid_product)),
+                    name=product.name,
+                    description=product.description or "",
+                    short_description=product.short_description,
+                    uid_groups=product.uid_groups,
+                    features=product.features,
+                    uid_features=product.uid_features,
+                    hash=product.hash,
+                    is_weighted=product.is_weighted,
+                    weight=product.weight_type,
+                    image_url=product.image_url,
+                )
+                .on_conflict_do_update(
+                    index_elements=["uid_product"],
+                    set_={
+                        "name": product.name,
+                        "description": product.description or "",
+                        "short_description": product.short_description,
+                        "uid_groups": product.uid_groups,
+                        "features": product.features,
+                        "uid_features": product.uid_features,
+                        "hash": product.hash,
+                        "is_weighted": product.is_weighted,
+                        "weight": product.weight_type,
+                        "image_url": product.image_url,
+                    },
+                )
             )
             await self._session.execute(stmt)
             result_products.append(product)
@@ -52,7 +60,7 @@ class ProductsGateway(ProductRepository):
         return await self.add_products(products)
 
     async def add_image(self, product_id: ProductId, image: ProductImage) -> Product:
-        query = select(ProductModel).where(product_id == ProductModel.uid_product)
+        query = select(ProductModel).where(ProductModel.uid_product == UUID(str(product_id)))
         result = await self._session.execute(query)
         product: ProductModel | None = result.scalar_one_or_none()
 
@@ -63,7 +71,7 @@ class ProductsGateway(ProductRepository):
         await self._session.commit()
         await self._session.refresh(product)
 
-        return Product.from_orm(product)
+        return self._map_model_to_domain(product)
 
     async def is_empty(self) -> bool:
         result = await self._session.execute(select(ProductModel).limit(1))
@@ -77,4 +85,20 @@ class ProductsGateway(ProductRepository):
     async def get_all_products(self) -> list[Product]:
         result = await self._session.execute(select(ProductModel))
         rows = result.scalars().all()
-        return [Product.from_orm(row) for row in rows]
+        return [self._map_model_to_domain(row) for row in rows]
+
+    @staticmethod
+    def _map_model_to_domain(model: ProductModel) -> Product:
+        return Product(
+            uid_product=ProductId(model.uid_product),
+            name=model.name,
+            description=model.description,
+            short_description=model.short_description,
+            uid_groups=model.uid_groups,
+            features=model.features,
+            uid_features=model.uid_features,
+            hash=model.hash,
+            is_weighted=model.is_weighted,
+            weight_type=model.weight,
+            image=ProductImage(model.image_url) if model.image_url else None,
+        )

@@ -1,4 +1,4 @@
-from src.rusoft.domain.contracts.database.repositories import ProductRepository
+from rusoft.domain.contracts.database.repositories import ProductRepository
 
 
 class DeleteProductsUseCase:

@@ -1,7 +1,6 @@
 from dishka import AsyncContainer, make_async_container
 
-from src.rusoft.config import DatabaseConfigProvider
-
+from ..config.provider import DatabaseConfigProvider
 from .providers import (
     ProductsGateProvider,
     ProductsUseCasesProvider,
@@ -14,6 +13,6 @@ def get_container(config_provider: DatabaseConfigProvider) -> AsyncContainer:
         ProductsGateProvider(),
         ProductsUseCasesProvider(),
         SessionProvider(),
-        context={DatabaseConfigProvider: config_provider},
+        context={DatabaseConfigProvider: config_provider}
     )
     return container

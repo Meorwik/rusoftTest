@@ -16,6 +16,7 @@ class ProductBase(BaseModel):
     uid_features: Optional[str] = None
     hash: Optional[str] = None
     is_weighted: bool | Weights = Field(default=False)
+    weight_type: Optional[Weights] = None
     image_url: Optional[str] = Field(default=None)
 
 

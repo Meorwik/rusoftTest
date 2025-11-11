@@ -8,9 +8,6 @@ def new_session_maker(config: DatabaseConfig) -> async_sessionmaker[AsyncSession
         config.sqlalchemy_uri,
         pool_size=15,
         max_overflow=15,
-        connect_args={
-            "connect_timeout": 5,
-        },
     )
     return async_sessionmaker(
         engine, class_=AsyncSession, autoflush=False, expire_on_commit=False

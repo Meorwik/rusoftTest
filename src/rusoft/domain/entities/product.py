@@ -21,7 +21,8 @@ class Product:
     features: Optional[str] = None
     uid_features: Optional[str] = None
     hash: Optional[str] = None
-    is_weighted: bool | Weights = False
+    is_weighted: bool = False
+    weight_type: Optional[Weights] = None
     image: Optional[ProductImage] = None
 
     @property
