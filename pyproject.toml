@@ -1,0 +1,43 @@
+[project]
+name = "TestRusoft"
+version = "0.0.1"
+dependencies = [
+    "fastapi==0.115.12",
+    "sqlalchemy==2.0.44",
+    "uvicorn[standard]==0.34.3",
+    "dishka==1.6.0",
+    "python-jose[cryptography]==3.5.0",
+    "pydantic[email]==2.11.5",
+    "pyyaml==6.0.2",
+    "asyncpg==0.30.0",
+    "alembic==1.17.0",
+    "python-multipart==0.0.20",
+]
+requires-python = ">=3.12"
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.11.12",
+    "mypy==1.16.0",
+    "sqlalchemy-stubs==0.4",
+    "pre-commit==4.2.0",
+    "httpx==0.28.1",
+    "uv>=0.7.17",
+    "types-PyYAML==6.0.12.20250915"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501", "F401"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+warn_unused_configs = true
+warn_unused_ignores = true
+disallow_subclassing_any = false
